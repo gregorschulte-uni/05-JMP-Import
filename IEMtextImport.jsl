@@ -1,0 +1,155 @@
+﻿/*
+IEMtextImport.jsl for Independent Eye Movement Project
+Modified from "Combine txt Tables.jsl" by Gregor Schulte
+
+Last Change: 18.09.2017
+
+
+///////////////////Original Comment START///////////////////
+Combine txt Tables.jsl
+JMP11.2.1
+03Mar2015
+added import settings example 01Jun2016
+
+
+Copyright (c) 2015 by SAS Institute Inc., Cary, NC 27513, USA. All rights reserved.
+
+Note: please read the disclaimer at the end of this script.
+Note: This script is for use with a specific example set of .txt files
+
+CAUTION!!
+This is a draft script indended to demonstrate scripting capabilities in JMP.
+A principal demonstrated here is how to combine separate scripting elements, use for-next 
+loops to automate repetative tasks, and use basic JSL to combine tables.
+
+Purpose: This script opens all the .txt files in a directory and then 
+concatenates them into one JMP table.  
+
+The script will ask you to select the directory containing the individual files
+and upon clicking "OK" the script will open, format and concatenate all the txt 
+or csv files into one JMP table.
+
+I hope you find this utility helpful. Please feel free to improve on its performance
+and capability, but send me a copy from time to time.
+
+Author: Byron A. Wingerd (SAS Institute)
+Contact: byron.wingerd@jmp.com
+Comments: none
+///////////////////Original Comment STOP///////////////////
+*/
+
+
+Names Default To Here( 1 );
+Clear Symbols();
+
+//set up variables with starting values
+filelist = {};   //empty list
+
+//launch dialog to get the file location
+prefilepath = Munger( Pick Directory( "Browse to the Directory of the .txt " ), 1, "/", "" );
+If( Host is( Mac ),
+	filepath = "/" || prefilepath,
+	filepath = Convert File Path( prefilepath, Windows )
+);
+
+prefilelist = Files In Directory( filepath );
+
+n2 = N Items( prefilelist );
+
+//filter out any non-txt  files
+For( i2 = 1, n2 >= i2, i2++,
+	file = (prefilelist[i2]);
+	If( Item( 2, prefilelist[i2], "." ) == "txt",
+		Insert Into( filelist, file ),
+		Show( file )
+	);
+);
+
+
+nf = N Items( filelist ); 								// number of items in the working list
+cctable = New Table( "IndependentEyeMovementData" );	// make an empty table "IndependentEyeMovementData"
+cctable << New Column( "source", Character, Nominal );	// insert new column "Source"
+For( iii = 1, iii <= nf, iii++, 						// loop through given number of *.txt files in folder
+	
+	filenow = (filelist[iii]);
+	
+	fileopen = (filepath || filenow);
+
+	dt = Open(
+		fileopen, 
+		columns(
+			Omitted Column( . ),
+			Column( "sessionID", Numeric, "Ordinal", Format( "Best", 12 ) ),
+			Omitted Column( . ),
+			Column( "camera", Character, "Nominal" ),
+			Omitted Column( . ),
+			Column( "copepodPos", Character, "Nominal" ),
+			Omitted Column( . ),
+			Column( "imageID", Numeric, "Continuous", Format( "Best", 12 ) ),
+			Omitted Column( . ),
+			Column( "fishID", Numeric, "Nominal", Format( "Best", 12 ) ),
+			Omitted Column( . ),
+			Column( "year", Character, "Nominal" ),
+			Omitted Column( . ),
+			Column( "month", Character, "Nominal" ),
+			Omitted Column( . ),
+			Column( "day", Character, "Nominal" ),
+			Omitted Column( . ),
+			Column( "hour", Character, "Nominal" ),
+			Omitted Column( . ),
+			Column( "minute", Character, "Nominal" ),
+			Omitted Column( . ),
+			Column( "second", Character, "Nominal" ),
+			Omitted Column( . ),
+			Column( "randomID", Numeric, "Continuous", Format( "Best", 12 ) ),
+			Omitted Column( . ),
+			Column( "score", Numeric, "Nominal", Format( "Best", 12 ) ),
+			Omitted Column( . )
+		),
+		Import Settings(
+			Fixed Column Widths( 1, 4, 1, 1, 2, 2, 4, 4, 2, 4, 1, 4, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 8, 1, 1, 72 ),
+			Strip Quotes( 0 ),
+			Use Apostrophe as Quotation Mark( 0 ),
+			Use Regional Settings( 0 ),
+			Scan Whole File( 1 ),
+			Treat empty columns as numeric( 0 ),
+			CompressNumericColumns( 0 ),
+			CompressCharacterColumns( 0 ),
+			CompressAllowListCheck( 0 ),
+			Labels( 0 ),
+			Column Names Start( 1 ),
+			Data Starts( 1 ),
+			Lines To Read( "All" ),
+			Year Rule( "20xx" )
+		),
+		private
+	);
+
+	New Column( "source", Character, Nominal ); // insert new column "Source"
+	:Source << set each value( filenow );		// fill "Source" with current file name
+	
+	New Column( "timestamp",					// insert New Column "Timestamp" and fill with data from teporary date columns
+		Numeric,
+		"Continuous",
+		Format( "y.m.d h:m:s", 22, 0 ),
+		Input Format( "yyyy-mm-ddThh:mm:ss", 0 ),
+		Formula(
+			Informat( (:year || "-" || :month || "-" || :day || "T" || :hour || ":" || :minute || ":" || :second), Empty() )
+		)
+	);
+
+
+	dt << Run Formulas(); 						//  performs all pending formula evaluations, including evaluations that are pending as a result of evaluating other formulas. 
+	cctable << Concatenate( Data Table( dt ), Append to first table ); //add the current table to the bottom of the combined data table
+
+
+
+	Close( dt, NoSave );						//after concatenating the table, close it and move on
+	
+);
+
+
+:score <<Value Labels( {1 = "rim", 2 = "red", 3="blue", 4="mix", 5="nothing"} ); 	//Add Value Labels for "score"
+:score <<Use Value Labels( 1 );														//Activate Value Labels for "score"
+
+cctable << delete column("year", "month", "day","hour","minute","second"); 	// delete oboslete colums used to create the "Timestamp"
