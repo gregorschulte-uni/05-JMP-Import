@@ -16,4 +16,5 @@
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
 
-
+$ cat .gitattributes
+*.jsl linguist-language=Java
