@@ -17,4 +17,3 @@
 *.RTF	 diff=astextplain
 
 
-*.rb linguist-language=Java
