@@ -65,7 +65,7 @@ For( i2 = 1, n2 >= i2, i2++,
 
 
 nf = N Items( filelist ); 								// number of items in the working list
-cctable = New Table( "IndependentEyeMovementData" );	// make an empty table "IndependentEyeMovementData"
+cctable = New Table( "Tripterygiidae Tripterygion delaisi");	// make an empty table "IndependentEyeMovementData"
 cctable << New Column( "source", Character, Nominal );	// insert new column "Source"
 For( iii = 1, iii <= nf, iii++, 						// loop through given number of *.txt files in folder
 	
