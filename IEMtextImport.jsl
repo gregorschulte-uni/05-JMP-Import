@@ -147,7 +147,18 @@ For( iii = 1, iii <= nf, iii++, 						// loop through given number of *.txt file
 );
 
 
-:score <<Value Labels( {1 = "rim", 2 = "red", 3="blue", 4="mix", 5="nothing"} ); 	//Add Value Labels for "score"
-:score <<Use Value Labels( 1 );														//Activate Value Labels for "score"
+:score <<Value Labels( {1 = "rim", 2 = "red", 3="blue", 4="mix", 5="nothing", 6="missing"} ); 	//Add Value Labels for "score"
+:score <<Use Value Labels( 1 );																	//Activate Value Labels for "score"
 
-cctable << delete column("year", "month", "day","hour","minute","second"); 	// delete oboslete colums used to create the "Timestamp"
+//replace 6 in score with "." as missing Value
+hVals = Column(cctable, "score") << getValues;
+hVals[Loc(hVals == 6)] = .;
+Column(cctable, "score") << setValues(hVals);
+
+cctable << delete column("year", "month", "day","hour","minute","second"); 						// delete oboslete colums used to create the "Timestamp"
+
+
+
+
+
+
