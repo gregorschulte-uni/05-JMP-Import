@@ -155,7 +155,7 @@ hVals = Column(cctable, "score") << getValues;
 hVals[Loc(hVals == 6)] = .;
 Column(cctable, "score") << setValues(hVals);
 
-cctable << delete column("year", "month", "day","hour","minute","second"); 						// delete oboslete colums used to create the "Timestamp"
+//cctable << delete column("year", "month", "day","hour","minute","second"); 						// delete oboslete colums used to create the "Timestamp"
 
 
 
