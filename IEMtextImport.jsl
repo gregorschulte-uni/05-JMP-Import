@@ -135,6 +135,22 @@ For( iii = 1, iii <= nf, iii++, 						// loop through given number of *.txt file
 			Informat( (:year || "-" || :month || "-" || :day || "T" || :hour || ":" || :minute || ":" || :second), Empty() )
 		)
 	);
+	
+	New Column( "decTime",					// insert New Column "decTime" and fill with decimal Hours hh.hhhh
+		Numeric,
+		"Continuous",
+		Format( "Best", 6),
+		Formula (Num( :hour ) + (Num( :minute ) / 60) + (Num( :second ) / 3600))
+		
+	);
+	
+	New Column( "jDay",					// insert New Column "jDay" and fill with julian day (since the beginning of the year)
+		Numeric,
+		"Continuous",
+		Format( "Best", 6),
+		Formula (Day Of Year(:timestamp))
+		
+	);
 
 
 	dt << Run Formulas(); 						//  performs all pending formula evaluations, including evaluations that are pending as a result of evaluating other formulas. 
@@ -155,7 +171,7 @@ hVals = Column(cctable, "score") << getValues;
 hVals[Loc(hVals == 6)] = .;
 Column(cctable, "score") << setValues(hVals);
 
-//cctable << delete column("year", "month", "day","hour","minute","second"); 						// delete oboslete colums used to create the "Timestamp"
+cctable << delete column("year", "month", "day","hour","minute","second"); 						// delete oboslete colums used to create the "Timestamp"
 
 
 
